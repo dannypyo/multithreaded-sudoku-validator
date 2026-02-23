@@ -33,7 +33,7 @@ typedef struct{
 int main(){
 	FILE *fptr;
 	int row = 0;
-	fptr = fopen("C:\\Users\\Daniel Pyo\\CS3\\project-01-team-flames\\SudokuPuzzle.txt", "r");
+	fptr = fopen("SudokuPuzzle.txt", "r");
 	while (fgets(buffer, sizeof(buffer), fptr) != NULL){
 		sscanf(buffer, "%d %d %d %d %d %d %d %d %d", 
 			&sudokuPuzzle[row][0], 
