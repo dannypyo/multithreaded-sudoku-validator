@@ -71,6 +71,23 @@ int main() {
       index++;
     }
   }
+  //column thread data 
+  parameters columndata[9];
+  for (int i = 0; i < 9; i++) {
+	columndata[i].topRow = 0;
+	columndata[i].bottomRow = 8;
+	columndata[i].leftColumn = i;
+	columndata[i].rightColumn = i;
+  }
+  // row thread data 
+  parameters rowdata[9];
+  for (int i = 0; i < 9; i++) {
+	rowdata[i].topRow = i;	
+	rowdata[i].bottomRow = i;
+	rowdata[i].leftColumn = 0;
+	rowdata[i].rightColumn = 8;
+  }
+
 }
 
 void* colChecker(void* param) {}
