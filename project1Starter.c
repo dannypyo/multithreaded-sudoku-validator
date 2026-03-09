@@ -71,6 +71,42 @@ int main() {
       index++;
     }
   }
+  //column thread data 
+  parameters columnData[9];
+  for (int i = 0; i < 9; i++) {
+	columnData[i].topRow = 0;
+	columnData[i].bottomRow = 8;
+	columnData[i].leftColumn = i;
+	columnData[i].rightColumn = i;
+  }
+  // row thread data 
+  parameters rowData[9];
+  for (int i = 0; i < 9; i++) {
+	rowData[i].topRow = i;	
+	rowData[i].bottomRow = i;
+	rowData[i].leftColumn = 0;
+	rowData[i].rightColumn = 8;
+  }
+
+  //  thread IDs
+  pthread_t tid_colThreads[9];
+  pthread_t tid_rowThreads[9];
+  pthread_t tid_subgridThreads[9];
+
+  //column worker threads
+  for (int i = 0; i < 9; i++) {
+    pthread_create(&tid_colThreads[i], NULL, colChecker, &columnData[i]);
+  }
+  // row worker threads
+  for (int i = 0; i < 9; i++) {
+    pthread_create(&tid_rowThreads[i], NULL, rowChecker, &rowData[i]);
+  }
+  // subgrid worker threads 
+  for (int i = 0; i < 9; i++) {
+    pthread_create(&tid_subgridThreads[i], NULL, subgridChecker, &subgridData[i]);
+  }
+
+
 }
 
 void* colChecker(void* param) {}
