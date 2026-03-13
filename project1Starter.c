@@ -33,7 +33,7 @@ int main() {
   FILE* fptr;
   int row = 0;
 
-  fptr = fopen("SudokuPuzzle.txt", "r");
+  fptr = fopen("project-01-team-flames/sudokuPuzzle.txt", "r");
 
   while (fgets(buffer, sizeof(buffer), fptr) != NULL) {
     sscanf(buffer, "%d %d %d %d %d %d %d %d %d", &sudokuPuzzle[row][0],
@@ -71,21 +71,21 @@ int main() {
       index++;
     }
   }
-  //column thread data 
+  // column thread data
   parameters columnData[9];
   for (int i = 0; i < 9; i++) {
-	columnData[i].topRow = 0;
-	columnData[i].bottomRow = 8;
-	columnData[i].leftColumn = i;
-	columnData[i].rightColumn = i;
+    columnData[i].topRow = 0;
+    columnData[i].bottomRow = 8;
+    columnData[i].leftColumn = i;
+    columnData[i].rightColumn = i;
   }
-  // row thread data 
+  // row thread data
   parameters rowData[9];
   for (int i = 0; i < 9; i++) {
-	rowData[i].topRow = i;	
-	rowData[i].bottomRow = i;
-	rowData[i].leftColumn = 0;
-	rowData[i].rightColumn = 8;
+    rowData[i].topRow = i;
+    rowData[i].bottomRow = i;
+    rowData[i].leftColumn = 0;
+    rowData[i].rightColumn = 8;
   }
 
   //  thread IDs
@@ -93,7 +93,7 @@ int main() {
   pthread_t tid_rowThreads[9];
   pthread_t tid_subgridThreads[9];
 
-  //column worker threads
+  // column worker threads
   for (int i = 0; i < 9; i++) {
     pthread_create(&tid_colThreads[i], NULL, colChecker, &columnData[i]);
   }
@@ -101,16 +101,72 @@ int main() {
   for (int i = 0; i < 9; i++) {
     pthread_create(&tid_rowThreads[i], NULL, rowChecker, &rowData[i]);
   }
-  // subgrid worker threads 
+  // subgrid worker threads
   for (int i = 0; i < 9; i++) {
-    pthread_create(&tid_subgridThreads[i], NULL, subgridChecker, &subgridData[i]);
+    pthread_create(&tid_subgridThreads[i], NULL, subgridChecker,
+                   &subgridData[i]);
   }
 
+  // join threads
+  for (int i = 0; i < 9; i++) pthread_join(tid_colThreads[i], NULL);
+  for (int i = 0; i < 9; i++) pthread_join(tid_rowThreads[i], NULL);
+  for (int i = 0; i < 9; i++) pthread_join(tid_subgridThreads[i], NULL);
 
+  // print results
+
+  // column results
+  for (int i = 0; i < 9; i++) {
+    printf("Column %d (Thread %lu): %s\n", i + 1,
+           (unsigned long)tid_colThreads[i],
+           colArray[i] == TRUE ? "valid" : "invalid");
+  }
+  // row results
+  for (int i = 0; i < 9; i++) {
+    printf("Row %d (Thread %lu): %s\n", i + 1, (unsigned long)tid_rowThreads[i],
+           rowArray[i] == TRUE ? "valid" : "invalid");
+  }
+  // subgrid results
+  for (int i = 0; i < 9; i++) {
+    printf("Subgrid %d (Thread %lu): %s\n", i + 1,
+           (unsigned long)tid_subgridThreads[i],
+           subgridArray[i] == TRUE ? "valid" : "invalid");
+  }
+  // final check
+  int allValid = TRUE;
+  for (int i = 0; i < 9; i++) {
+    if (colArray[i] == FALSE || rowArray[i] == FALSE ||
+        subgridArray[i] == FALSE) {
+      allValid = FALSE;
+      break;
+    }
+  }
+  printf("Sudoku Puzzle: %s\n", allValid == TRUE ? "valid" : "invalid");
+
+  return 0;
 }
 
 void* colChecker(void* param) {}
 
 void* rowChecker(void* param) {}
 
-void* subgridChecker(void* param) {}
+void* subgridChecker(void* param) {
+  parameters* data = (parameters*)param;
+
+  int index = (data->topRow / 3) * 3 + (data->leftColumn / 3);
+
+  bool seen[10] = {false};
+
+  for (int row = data->topRow; row <= data->bottomRow; row++) {
+    for (int col = data->leftColumn; col <= data->rightColumn; col++) {
+      int val = sudokuPuzzle[row][col];
+      if (val < 1 || val > 9 || seen[val]) {
+        subgridArray[index] = FALSE;
+        pthread_exit(0);
+      }
+      seen[val] = true;
+    }
+  }
+
+  subgridArray[index] = TRUE;
+  pthread_exit(0);
+}
