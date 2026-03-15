@@ -35,6 +35,7 @@ int main() {
 
   fptr = fopen("project-01-team-flames/sudokuPuzzle.txt", "r");
 
+  // Read each row from the file into the Sudoku matrix
   while (fgets(buffer, sizeof(buffer), fptr) != NULL) {
     sscanf(buffer, "%d %d %d %d %d %d %d %d %d", &sudokuPuzzle[row][0],
            &sudokuPuzzle[row][1], &sudokuPuzzle[row][2], &sudokuPuzzle[row][3],
@@ -42,12 +43,16 @@ int main() {
            &sudokuPuzzle[row][7], &sudokuPuzzle[row][8]);
     row++;
   }
+  fclose(fptr);
+
+  //Print the Sudoku Puzzle
   for (int i = 0; i < 9; i++) {
     for (int j = 0; j < 9; j++) {
-      printf("%d ", sudokuPuzzle[i][j]);  // print each number
+      printf("%d ", sudokuPuzzle[i][j]);
     }
-    printf("\n");  // new line after each row
+    printf("\n");
   }
+
   // initialize all entries in Boolean arrays to false
   for (int i = 0; i < 9; i++) {
     colArray[i] = FALSE;
@@ -58,6 +63,7 @@ int main() {
   for (int i = 0; i < 9; i++) {
     subgridArray[i] = FALSE;
   }
+
   // subgrid data
   parameters subgridData[9];
   int index = 0;
@@ -111,6 +117,16 @@ int main() {
   for (int i = 0; i < 9; i++) pthread_join(tid_colThreads[i], NULL);
   for (int i = 0; i < 9; i++) pthread_join(tid_rowThreads[i], NULL);
   for (int i = 0; i < 9; i++) pthread_join(tid_subgridThreads[i], NULL);
+  // Print Column Validation Results
+  printf("\nColumn Results\n");
+  for(int i=0;i<9;i++)
+    printf("Column: %lx %s\n", tid_colThreads[i], colArray[i] ? "valid" : "invalid");
+
+  // Print Row Validation Results
+  printf("\nRow Results\n");
+  for(int i=0;i<9;i++)
+    printf("Row: %lx %s\n", tid_rowThreads[i], rowArray[i] ? "valid" : "invalid");
+
 
   // print results
 
@@ -145,9 +161,80 @@ int main() {
   return 0;
 }
 
-void* colChecker(void* param) {}
+void* colChecker(void* param) {
+    parameters* data = (parameters*)param;
 
-void* rowChecker(void* param) {}
+    int col = data->leftColumn;
+
+    int seen[10] = {0};   // track numbers 1-9
+
+    for(int row = data->topRow; row <= data->bottomRow; row++){
+
+        int num = sudokuPuzzle[row][col];
+
+        // Check if number is invalid or duplicated
+        if(num < 1 || num > 9 || seen[num]){
+
+            colArray[col] = FALSE;
+
+            printf("%lx TRow:%d, BRow:%d, LCol:%d, RCol:%d invalid!\n",
+                   pthread_self(),
+                   data->topRow,data->bottomRow,
+                   data->leftColumn,data->rightColumn);
+
+            pthread_exit(NULL);
+        }
+
+        seen[num] = 1;
+    }
+
+    colArray[col] = TRUE;
+
+    printf("%lx TRow:%d, BRow:%d, LCol:%d, RCol:%d valid!\n",
+           pthread_self(),
+           data->topRow,data->bottomRow,
+           data->leftColumn,data->rightColumn);
+
+    pthread_exit(NULL);
+}
+
+
+void* rowChecker(void* param) {
+
+    parameters* data = (parameters*)param;
+
+    int row = data->topRow;
+
+    int seen[10] = {0};
+
+    for(int col = data->leftColumn; col <= data->rightColumn; col++){
+
+        int num = sudokuPuzzle[row][col];
+
+        if(num < 1 || num > 9 || seen[num]){
+
+            rowArray[row] = FALSE;
+
+            printf("%lx TRow:%d, BRow:%d, LCol:%d, RCol:%d invalid!\n",
+                   pthread_self(),
+                   data->topRow,data->bottomRow,
+                   data->leftColumn,data->rightColumn);
+
+            pthread_exit(NULL);
+        }
+
+        seen[num] = 1;
+    }
+
+    rowArray[row] = TRUE;
+
+    printf("%lx TRow:%d, BRow:%d, LCol:%d, RCol:%d valid!\n",
+           pthread_self(),
+           data->topRow,data->bottomRow,
+           data->leftColumn,data->rightColumn);
+
+    pthread_exit(NULL);
+}
 
 void* subgridChecker(void* param) {
   parameters* data = (parameters*)param;
