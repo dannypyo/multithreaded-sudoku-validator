@@ -1,5 +1,12 @@
 /**
  *<Program header>
+ * Sudoku Validator using  pthreads in C.
+ *
+ * This program validates a 9x9 Sudoku puzzle using multithreading.
+ * Separate threads check each row, column, and 3x3 subgrid for validity.
+ *
+ * Group: Team Flames
+ * Date: 03/15/2025
  */
 
 #include <pthread.h>
@@ -160,7 +167,12 @@ int main() {
 
   return 0;
 }
-
+/**
+* colChecker
+* Validates a single column of the Sudoku puzzle.
+* uses a 'seen' array to track if each number 1-9 appears exactly once.
+* If duplicate or invalid number is found, marks the column invalid.
+ */
 void* colChecker(void* param) {
     parameters* data = (parameters*)param;
 
@@ -168,6 +180,7 @@ void* colChecker(void* param) {
 
     int seen[10] = {0};   // track numbers 1-9
 
+    // Loop through each row in this column
     for(int row = data->topRow; row <= data->bottomRow; row++){
 
         int num = sudokuPuzzle[row][col];
@@ -198,7 +211,11 @@ void* colChecker(void* param) {
     pthread_exit(NULL);
 }
 
-
+/**
+* rowChecker
+* Validates a single row of the Sudoku puzzle.
+* uses a 'seen' array to track numbers 1-9
+*/
 void* rowChecker(void* param) {
 
     parameters* data = (parameters*)param;
@@ -236,6 +253,11 @@ void* rowChecker(void* param) {
     pthread_exit(NULL);
 }
 
+/**
+* subgridChecker
+* Validates a 3x3 subgrid of the Sudoku puzzle.
+* Marks subgrid invalid if duplicate or numbers outside 1-9 are found.
+*/
 void* subgridChecker(void* param) {
   parameters* data = (parameters*)param;
 
