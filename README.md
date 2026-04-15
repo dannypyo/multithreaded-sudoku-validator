@@ -95,5 +95,3 @@ Subgrid: <TID in HEX> <”valid” or “invalid” depending on its entry in th
 
 4) Display the final conclusion “valid” (“TRUE” in all entries of all three Boolean arrays) or “invalid”
 Sudoku Puzzle: <”valid” or “invalid” depending on all values in three Boolean arrays>
-
-# Please make sure to push your work into the main branch.
